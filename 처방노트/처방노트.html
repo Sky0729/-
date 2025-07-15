@@ -1,0 +1,1320 @@
+
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💊 처방노트 In Indonesia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .tab-button.active {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .scroll-area {
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        .scroll-area::-webkit-scrollbar {
+            width: 6px;
+        }
+        .scroll-area::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 3px;
+        }
+        .scroll-area::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        .scroll-area::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto p-4 max-w-4xl">
+        <h1 class="text-3xl font-bold mb-8 text-center text-gray-800">💊 처방노트 In Indonesia</h1>
+        
+        <!-- Smart Search -->
+        <div class="mb-8">
+            <div class="bg-white rounded-2xl shadow-lg p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4 text-center">🔍 증상별 약물 검색</h2>
+                <div class="relative">
+                    <input 
+                        type="text" 
+                        id="symptomSearch" 
+                        placeholder="자연스럽게 표현해보세요! (예: 머리 아파, 속 쓰려, 기침 멈추지 않아, 열 나...)"
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
+                        oninput="searchSymptoms()"
+                    >
+                    <div class="absolute right-3 top-3 text-gray-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+                
+                <!-- Quick Symptom Buttons -->
+                <div class="mt-4">
+                    <p class="text-sm text-gray-600 mb-2">빠른 검색:</p>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="quickSearchNatural('머리 아파')" class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm hover:bg-red-200 transition-colors">머리 아파</button>
+                        <button onclick="quickSearchNatural('속 쓰려')" class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm hover:bg-yellow-200 transition-colors">속 쓰려</button>
+                        <button onclick="quickSearchNatural('기침 나')" class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm hover:bg-blue-200 transition-colors">기침 나</button>
+                        <button onclick="quickSearchNatural('코 막혀')" class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm hover:bg-green-200 transition-colors">코 막혀</button>
+                        <button onclick="quickSearchNatural('열 나')" class="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm hover:bg-orange-200 transition-colors">열 나</button>
+                        <button onclick="quickSearchNatural('설사해')" class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm hover:bg-purple-200 transition-colors">설사해</button>
+                        <button onclick="quickSearchNatural('가려워')" class="px-3 py-1 bg-pink-100 text-pink-700 rounded-full text-sm hover:bg-pink-200 transition-colors">가려워</button>
+                        <button onclick="quickSearchNatural('피곤해')" class="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm hover:bg-indigo-200 transition-colors">피곤해</button>
+                        <button onclick="quickSearchNatural('어지러워')" class="px-3 py-1 bg-teal-100 text-teal-700 rounded-full text-sm hover:bg-teal-200 transition-colors">어지러워</button>
+                        <button onclick="quickSearchNatural('심장 두근거려')" class="px-3 py-1 bg-rose-100 text-rose-700 rounded-full text-sm hover:bg-rose-200 transition-colors">심장 두근거려</button>
+                        <button onclick="quickSearchNatural('손발 저려')" class="px-3 py-1 bg-cyan-100 text-cyan-700 rounded-full text-sm hover:bg-cyan-200 transition-colors">손발 저려</button>
+                        <button onclick="quickSearchNatural('이 아파')" class="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm hover:bg-amber-200 transition-colors">이 아파</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Results -->
+        <div id="searchResults" class="mb-8 hidden">
+            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl shadow-lg p-6 border-l-4 border-blue-400">
+                <h3 class="text-xl font-semibold text-blue-800 mb-4">💡 추천 약물</h3>
+                <div id="recommendedMeds" class="grid gap-4">
+                    <!-- Search results will be populated here -->
+                </div>
+                <button onclick="clearSearch()" class="mt-4 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">검색 결과 닫기</button>
+            </div>
+        </div>
+        
+        <!-- Tab Navigation -->
+        <div class="mb-8">
+            <div class="bg-white rounded-2xl shadow-lg p-3">
+                <div class="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-2">
+                    <button class="tab-button px-3 py-3 rounded-xl text-xs font-semibold transition-all duration-300 hover:bg-blue-50 active text-center" onclick="showTab('진통·해열제')">
+                        <div class="text-lg mb-1">💊</div>
+                        <div>진통·해열제</div>
+                    </button>
+                    <button class="tab-button px-3 py-3 rounded-xl text-xs font-semibold transition-all duration-300 hover:bg-blue-50 text-center" onclick="showTab('감기·기침')">
+                        <div class="text-lg mb-1">🤧</div>
+                        <div>감기·기침</div>
+                    </button>
+                    <button class="tab-button px-3 py-3 rounded-xl text-xs font-semibold transition-all duration-300 hover:bg-blue-50 text-center" onclick="showTab('소화기')">
+                        <div class="text-lg mb-1">🫃</div>
+                        <div>소화기</div>
+                    </button>
+                    <button class="tab-button px-3 py-3 rounded-xl text-xs font-semibold transition-all duration-300 hover:bg-blue-50 text-center" onclick="showTab('알레르기')">
+                        <div class="text-lg mb-1">🤧</div>
+                        <div>알레르기</div>
+                    </button>
+                    <button class="tab-button px-3 py-3 rounded-xl text-xs font-semibold transition-all duration-300 hover:bg-blue-50 text-center" onclick="showTab('외용제')">
+                        <div class="text-lg mb-1">🧴</div>
+                        <div>외용제</div>
+                    </button>
+                    <button class="tab-button px-3 py-3 rounded-xl text-xs font-semibold transition-all duration-300 hover:bg-blue-50 text-center" onclick="showTab('비타민·보조제')">
+                        <div class="text-lg mb-1">🍊</div>
+                        <div>비타민·보조제</div>
+                    </button>
+                    <button class="tab-button px-3 py-3 rounded-xl text-xs font-semibold transition-all duration-300 hover:bg-blue-50 text-center" onclick="showTab('항생제')">
+                        <div class="text-lg mb-1">🦠</div>
+                        <div>항생제</div>
+                    </button>
+                    <button class="tab-button px-3 py-3 rounded-xl text-xs font-semibold transition-all duration-300 hover:bg-blue-50 text-center" onclick="showTab('만성질환')">
+                        <div class="text-lg mb-1">❤️</div>
+                        <div>만성질환</div>
+                    </button>
+                    <button class="tab-button px-3 py-3 rounded-xl text-xs font-semibold transition-all duration-300 hover:bg-blue-50 text-center" onclick="showTab('기타')">
+                        <div class="text-lg mb-1">🏥</div>
+                        <div>기타</div>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Contents -->
+        <div id="진통·해열제" class="tab-content active">
+            <div class="scroll-area">
+                <div class="grid gap-6">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Paracetamol 500mg – Sanmol</h2>
+                        <p class="text-gray-600 mb-2">두통, 치통, 발열 해소</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 2,200–2,600 (4정)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 두통, 치통, 미열, 감기</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 간기능 이상 (고용량 시), 메스꺼움</p>
+                        <p class="text-xs text-gray-500">📝 가장 널리 사용되는 해열진통제. 간에서 대사되며 비교적 안전하나 과다복용 시 간 손상 우려</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Paracetamol 650mg – Sanmol Forte</h2>
+                        <p class="text-gray-600 mb-2">성인용 고용량 해열진통</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 3,200 (4정)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 고열, 생리통, 감기 발열</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 간 독성, 구토</p>
+                        <p class="text-xs text-gray-500">📝 고열 또는 강한 통증에 사용. 어린이 또는 간 질환자는 주의 요함</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Ibuprofen 200mg – Proris Tablet</h2>
+                        <p class="text-gray-600 mb-2">통증, 생리통, 발열</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 8,400–10,200 (10정)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 생리통, 염증, 근육통</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 속쓰림, 위장 출혈, 신장 기능 저하</p>
+                        <p class="text-xs text-gray-500">📝 비스테로이드성 항염증제(NSAID). 염증성 통증에 효과적이며, 위장 장애 유발 가능</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Ibuprofen Syrup – Proris Suspensi</h2>
+                        <p class="text-gray-600 mb-2">어린이용 해열·진통 (50-60ml)</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 26,000–39,000</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 감기 발열, 중이염 등 소아통증</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 복통, 구토, 설사</p>
+                        <p class="text-xs text-gray-500">📝 어린이 발열, 감기 통증에 효과적이며, 체중 기준으로 복용량 조절 필요</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Mefenamic Acid 250mg – Ponstan</h2>
+                        <p class="text-gray-600 mb-2">생리통, 근육통 등</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 8,000–12,000 (10정)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 생리통, 치통, 요통</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 위장장애, 메스꺼움, 어지러움</p>
+                        <p class="text-xs text-gray-500">📝 강한 진통 효과가 있는 NSAID로, 생리통 완화에 주로 사용됨</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Panadol (Paracetamol 500mg)</h2>
+                        <p class="text-gray-600 mb-2">두통, 발열, 치통 등 일반 통증 완화</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 5,000–7,000 (10정)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 두통, 발열, 치통, 근육통</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 드물게 간 손상 (과다 복용 시), 알레르기 반응 가능</p>
+                        <p class="text-xs text-gray-500">📝 전 세계적으로 널리 사용되는 해열진통제로, 중추 신경계에 작용해 통증과 발열을 낮춤</p>
+                    </div>
+                    <div class="bg-green-50 rounded-2xl shadow-md p-6 hover:shadow-lg transition-shadow duration-200 border-l-4 border-green-400">
+                        <h2 class="text-lg font-semibold text-green-800 mb-2">🌿 Tolak Angin</h2>
+                        <p class="text-gray-600 mb-2">감기 초기 증상 완화, 몸살, 피로 회복</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 5,000–10,000 (팩)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 감기 초기 증상, 몸살, 체력 저하</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 과민 반응 시 알레르기, 과다 복용 시 소화 불량 가능</p>
+                        <p class="text-xs text-gray-500">📝 인도네시아 전통 허브 성분 기반의 감기약으로, 체내 면역력 증진과 피로 회복에 도움을 줌</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="감기·기침" class="tab-content">
+            <div class="scroll-area">
+                <div class="grid gap-4">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Dextromethorphan 10mg – Woods, OBH Batuk</h2>
+                        <p class="text-gray-600 mb-2">기침 억제</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 4,000–7,000 (10정)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 마른기침, 알레르기성 기침</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 어지러움, 졸음, 구역감</p>
+                        <p class="text-xs text-gray-500">📝 마른 기침을 억제하는 진해제</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Guaifenesin 100mg – Woods, OBH Combi</h2>
+                        <p class="text-gray-600 mb-2">가래 배출</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 4,500–7,000 (10정)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 가래 기침, 기관지염</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 메스꺼움, 위장장애</p>
+                        <p class="text-xs text-gray-500">📝 점액을 묽게 하여 기침을 쉽게 함</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Ambroxol 30mg – Mucosolvan Tablet</h2>
+                        <p class="text-gray-600 mb-2">가래 제거, 점액 용해</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 7,000–10,000 (10정)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 기관지염, 감기 가래</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 위장 자극, 미각 변화</p>
+                        <p class="text-xs text-gray-500">📝 기관지 점액 제거 촉진</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="소화기" class="tab-content">
+            <div class="scroll-area">
+                <div class="grid gap-4">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Omeprazole 20mg – Omepro / Omez</h2>
+                        <p class="text-gray-600 mb-2">위산 과다, 위염, 위궤양</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 10,000–13,000 (10정)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 속쓰림, 위궤양, 식도역류</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 설사, 복통, 장기 복용 시 B12 결핍</p>
+                        <p class="text-xs text-gray-500">📝 위산분비 억제제 (PPI). 아침 공복 복용</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Antacids – Promag / Mylanta / Polysilane</h2>
+                        <p class="text-gray-600 mb-2">위산 중화</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 5,000–10,000 (정제/시럽)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 속쓰림, 위산 역류, 소화불량</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 변비 또는 설사, 복부 팽만</p>
+                        <p class="text-xs text-gray-500">📝 즉효성. 위산을 직접 중화시켜 속쓰림 해소</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Loperamide 2mg – Imodium / Diapet</h2>
+                        <p class="text-gray-600 mb-2">설사 완화</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 4,000–7,000 (10정)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 급성 설사, 여행자 설사</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 복통, 변비, 졸음</p>
+                        <p class="text-xs text-gray-500">📝 장운동 억제로 급성 설사 증상 조절</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Domperidone 10mg – Motilium</h2>
+                        <p class="text-gray-600 mb-2">소화불량, 구토 억제</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 6,000–9,000 (10정)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 더부룩함, 오심</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 입마름, 드물게 심장 부정맥</p>
+                        <p class="text-xs text-gray-500">📝 위 배출을 촉진하여 더부룩함 완화</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Metoclopramide 10mg – Plasil</h2>
+                        <p class="text-gray-600 mb-2">구역, 구토</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 5,000–8,000 (10정)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 위장 문제로 인한 오심</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 졸음, 근육경직 (장기 복용 시)</p>
+                        <p class="text-xs text-gray-500">📝 도파민 차단을 통해 위장 운동 조절</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Simethicone 40mg – Polysilane / Infacol</h2>
+                        <p class="text-gray-600 mb-2">복부 팽만, 가스 제거</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 6,000–9,000 (10정)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 복부팽만, 아기 산통</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 거의 없음</p>
+                        <p class="text-xs text-gray-500">📝 가스를 분해해 트림, 복통 완화</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Activated Charcoal 250mg – Norit</h2>
+                        <p class="text-gray-600 mb-2">가벼운 식중독, 가스 제거</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 8,000–12,000 (10정)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 식중독, 설사, 복통</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 변색된 대변, 변비</p>
+                        <p class="text-xs text-gray-500">📝 독소 흡착작용. 급성 복통 시 사용</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">ORS Drinks – Pocari Sweat</h2>
+                        <p class="text-gray-600 mb-2">전해질 보충 (500ml)</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 5,000–7,000</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 탈수, 구토, 설사</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 당 함량 주의 (당뇨 환자)</p>
+                        <p class="text-xs text-gray-500">📝 흡수가 빠른 전해질 음료. 운동 후 또는 더위에 유용</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Lactulose Syrup 10g/15mL – Duphalac</h2>
+                        <p class="text-gray-600 mb-2">변비 완화 (200ml)</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 15,000–20,000</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 만성변비, 치질 환자의 배변 완화</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 복부 팽만, 방귀</p>
+                        <p class="text-xs text-gray-500">📝 장내 수분을 증가시켜 배변 유도</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Bisacodyl 5mg – Dulcolax</h2>
+                        <p class="text-gray-600 mb-2">자극성 완화제</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 7,000–10,000 (10정)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 변비</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 복통, 설사, 전해질 불균형</p>
+                        <p class="text-xs text-gray-500">📝 대장 운동 촉진. 단기 사용 권장</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="알레르기" class="tab-content">
+            <div class="scroll-area">
+                <div class="grid gap-4">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Loratadine 10mg – Clarityne / Alerid</h2>
+                        <p class="text-gray-600 mb-2">비알레르기성 알레르기</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 5,000–8,000 (10정)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 코막힘, 재채기, 콧물, 두드러기</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 드물게 졸음, 입 마름</p>
+                        <p class="text-xs text-gray-500">📝 졸음이 덜한 2세대 항히스타민제. 하루 1정 복용</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Cetirizine 10mg – Incidal OD / Zyrtec</h2>
+                        <p class="text-gray-600 mb-2">계절성 알레르기</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 4,500–7,000 (10정)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 재채기, 가려움, 눈물</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 졸음, 두통</p>
+                        <p class="text-xs text-gray-500">📝 알레르기 비염, 피부염에 효과적. 하루 1회 복용</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Chlorpheniramine 4mg (CTM)</h2>
+                        <p class="text-gray-600 mb-2">감기, 두드러기</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 3,000–5,000 (10정)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 콧물, 재채기, 가려움</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 졸음, 집중력 저하</p>
+                        <p class="text-xs text-gray-500">📝 졸음을 유발할 수 있는 1세대 항히스타민제</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Diphenhydramine 25mg – Benadryl</h2>
+                        <p class="text-gray-600 mb-2">가려움 완화, 수면 유도</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 12,000–15,000 (10정)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 불면증, 두드러기, 비염</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 강한 졸음, 입 마름, 어지러움</p>
+                        <p class="text-xs text-gray-500">📝 알러지 치료 및 수면 유도에 사용</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Pseudoephedrine 60mg – Actifed / Mixagrip</h2>
+                        <p class="text-gray-600 mb-2">코막힘 완화</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 6,000–10,000 (10정)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 감기, 비염, 축농증</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 불면, 혈압 상승, 심계항진</p>
+                        <p class="text-xs text-gray-500">📝 비충혈 제거제. 고혈압 환자 주의</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Phenylephrine 5mg – OBH Combi, Decolgen</h2>
+                        <p class="text-gray-600 mb-2">감기 증상 완화</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 3,500–6,000 (10정)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 감기, 알레르기 비염</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 가슴 두근거림, 혈압 상승</p>
+                        <p class="text-xs text-gray-500">📝 코막힘 완화제. 복합 감기약에 포함됨</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="외용제" class="tab-content">
+            <div class="scroll-area">
+                <div class="grid gap-4">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Hydrocortisone 1% Cream – Generic</h2>
+                        <p class="text-gray-600 mb-2">가벼운 염증, 가려움, 피부염</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 6,000–10,000 (15g)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 접촉성 피부염, 벌레 물림, 가벼운 습진</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 피부 얇아짐, 발진 (장기 사용 시)</p>
+                        <p class="text-xs text-gray-500">📝 약한 스테로이드 연고. 하루 2회 정도 소량 도포</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Miconazole 2% Cream – Daktarin</h2>
+                        <p class="text-gray-600 mb-2">무좀, 칸디다(곰팡이 감염)</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 20,000–30,000 (15g)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 발 무좀, 사타구니 백선, 백선증</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 따가움, 발적</p>
+                        <p class="text-xs text-gray-500">📝 항진균제. 1일 2회 감염 부위에 발라줌</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Clotrimazole 1% Cream – Canesten</h2>
+                        <p class="text-gray-600 mb-2">광범위 진균 감염 치료</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 25,000–35,000 (15g)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 칸디다증, 무좀, 완선</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 발진, 자극감</p>
+                        <p class="text-xs text-gray-500">📝 피부 사타구니, 발, 손, 손톱의 곰팡이 감염 치료</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Povidone‑iodine – Betadine</h2>
+                        <p class="text-gray-600 mb-2">상처 소독</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 15,000–25,000 (60ml)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 찰과상, 수술 전후 부위 소독</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 알레르기 반응, 착색</p>
+                        <p class="text-xs text-gray-500">📝 넓은 항균 효과. 절개, 찰과상, 화상 소독에 사용</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Neomycin + Bacitracin Cream – Bioplacenton</h2>
+                        <p class="text-gray-600 mb-2">감염 예방용 항생 연고</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 18,000–25,000 (15g)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 벌어진 상처, 세균 감염 위험 부위</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 접촉성 피부염</p>
+                        <p class="text-xs text-gray-500">📝 상처·염증 부위에 항균 작용. 하루 2~3회 사용</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Calamine Lotion – Caladine / Calamine Baby</h2>
+                        <p class="text-gray-600 mb-2">가려움, 두드러기, 열 rash 완화</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 8,000–12,000 (60ml)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 벌레 물림, 땀띠, 알레르기성 발진</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 드물게 건조감</p>
+                        <p class="text-xs text-gray-500">📝 시원하고 진정되는 느낌. 아이들 피부에도 안전</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Permethrin 5% Cream – Scabimite</h2>
+                        <p class="text-gray-600 mb-2">옴, 이 감염</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 45,000–60,000 (30g)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 옴, 머릿니, 몸니</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 따끔거림, 건조감</p>
+                        <p class="text-xs text-gray-500">📝 피부 전체에 도포 후 일정 시간 후 씻어냄. 침구류도 소독 필요</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Salicylic Acid 2–5% Ointment – Generic</h2>
+                        <p class="text-gray-600 mb-2">각질 제거, 여드름, 사마귀</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 10,000–18,000 (15g)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 여드름, 티눈, 사마귀</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 자극감, 피부 벗겨짐</p>
+                        <p class="text-xs text-gray-500">📝 각질층을 녹이는 작용. 점·사마귀 제거에 유용</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="비타민·보조제" class="tab-content">
+            <div class="scroll-area">
+                <div class="grid gap-4">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Vitamin C 500mg – Redoxon</h2>
+                        <p class="text-gray-600 mb-2">면역력 강화, 감기 예방</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 15,000–20,000 (10정)</p>
+                        <p class="text-xs text-gray-500">📝 수용성 비타민, 하루 1-2정</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Vitamin B Complex – Neurobion</h2>
+                        <p class="text-gray-600 mb-2">신경계 건강, 피로 회복</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 20,000–25,000 (10정)</p>
+                        <p class="text-xs text-gray-500">📝 B1, B6, B12 복합체, 식후 복용</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Vitamin D3 1000IU – Ostelin</h2>
+                        <p class="text-gray-600 mb-2">뼈 건강, 칼슘 흡수</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 35,000–45,000 (30정)</p>
+                        <p class="text-xs text-gray-500">📝 지용성 비타민, 식사와 함께 복용</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Multivitamin – Centrum</h2>
+                        <p class="text-gray-600 mb-2">종합 영양 보충</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 45,000–60,000 (30정)</p>
+                        <p class="text-xs text-gray-500">📝 종합비타민, 하루 1정 식후 복용</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Iron Supplement – Sangobion</h2>
+                        <p class="text-gray-600 mb-2">빈혈 예방, 철분 보충</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 25,000–30,000 (10정)</p>
+                        <p class="text-xs text-gray-500">📝 철분제, 공복 시 복용, 변비 가능</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Calcium + D3 – CDR</h2>
+                        <p class="text-gray-600 mb-2">뼈 건강, 골다공증 예방</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 20,000–25,000 (10정)</p>
+                        <p class="text-xs text-gray-500">📝 발포정, 물에 녹여서 복용</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="항생제" class="tab-content">
+            <div class="scroll-area">
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-yellow-700">
+                                <strong>⚠️ 처방 필요:</strong> 아래 항생제는 의사 처방 없이 사용하면 내성 및 부작용 위험이 있습니다. 반드시 감염 유형 확인 후 복용하세요.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid gap-4">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Amoxicillin 500mg – Amoxsan / Generic</h2>
+                        <p class="text-gray-600 mb-2">다양한 박테리아 감염</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 20,000–30,000 (10정)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 인후염, 중이염, 치과 감염, 요로감염</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 위장 장애, 발진, 드물게 아나필락시스</p>
+                        <p class="text-xs text-gray-500">📝 페니실린계 항생제로 세균 세포벽 생성 억제</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Azithromycin 250mg – Zithromax / Generic</h2>
+                        <p class="text-gray-600 mb-2">호흡기 감염, 성병(STD)</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 30,000–45,000 (3–5정)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 기관지염, 폐렴, 클라미디아, 편도염</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 설사, 복부팽만, 간 수치 상승</p>
+                        <p class="text-xs text-gray-500">📝 단기 고농도 복용으로 긴 효과 (1일 1회, 3일)</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Ciprofloxacin 500mg – Ciprolon / Cipro</h2>
+                        <p class="text-gray-600 mb-2">요로감염, 위장 감염, 일부 호흡기 감염</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 25,000–35,000 (10정)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 방광염, 설사(살모넬라, 대장균), 피부 감염</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 현기증, 힘줄염, 빛 민감성</p>
+                        <p class="text-xs text-gray-500">📝 DNA 합성 억제 (퀴놀론계)</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Cefixime 200mg – Fixef / Generic</h2>
+                        <p class="text-gray-600 mb-2">상기도 감염, 요로감염</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 45,000–60,000 (10정)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 편도염, 기관지염, 신우신염</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 설사, 알레르기 반응, 간효소 상승</p>
+                        <p class="text-xs text-gray-500">📝 3세대 세팔로스포린, 광범위 항생제</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Doxycycline 100mg – Doxicor / Vibramycin</h2>
+                        <p class="text-gray-600 mb-2">말라리아 예방, 호흡기·성병·피부 감염</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 25,000–35,000 (10정)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 여드름, 성병, 말라리아, 리케차 감염</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 속 쓰림, 태양광 민감성, 식도 자극</p>
+                        <p class="text-xs text-gray-500">📝 단백질 합성 억제 (테트라사이클린계)</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Metronidazole 500mg – Flagyl / Metrogyl</h2>
+                        <p class="text-gray-600 mb-2">혐기성 감염, 위장 감염, 여성 질염</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 15,000–25,000 (10정)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 아메바성 이질, 클로스트리디움, 박테리아성 질염</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 금속 맛, 구토, 알코올 복용 시 구토 유발 (절대 금지)</p>
+                        <p class="text-xs text-gray-500">📝 DNA 손상 유도해 세균 사멸</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="만성질환" class="tab-content">
+            <div class="scroll-area">
+                <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-blue-700">
+                                <strong>💊 만성질환 약물:</strong> 당뇨병, 고혈압, 심장질환 등 장기 복용이 필요한 약물들입니다. 정기적인 의사 상담과 혈액검사가 필요합니다.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid gap-4">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Metformin 500mg – Glumin / Glucovance</h2>
+                        <p class="text-gray-600 mb-2">제2형 당뇨병 혈당 조절</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 15,000–25,000 (10정)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 공복 혈당 상승, 인슐린 저항성</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 복통, 설사, 메스꺼움, 드물게 젖산산증</p>
+                        <p class="text-xs text-gray-500">📝 간에서 포도당 생성 억제, 인슐린 민감도 향상</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Amlodipine 5mg – Norvasc / Generic</h2>
+                        <p class="text-gray-600 mb-2">고혈압, 협심증</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 12,000–18,000 (10정)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 지속적 고혈압, 흉통</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 부종, 어지러움, 두통</p>
+                        <p class="text-xs text-gray-500">📝 칼슘통로 차단제로 혈관 확장 유도</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Lisinopril 10mg – Generic</h2>
+                        <p class="text-gray-600 mb-2">고혈압, 심부전</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 10,000–15,000 (10정)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 심장 부담 완화, 고혈압 관리</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 마른 기침, 저혈압, 칼륨 상승</p>
+                        <p class="text-xs text-gray-500">📝 ACE 억제로 혈압 감소 및 심장 보호</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Captopril 25mg – Generic</h2>
+                        <p class="text-gray-600 mb-2">고혈압, 심장 질환</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 8,000–12,000 (10정)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 빠른 혈압 조절이 필요할 때</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 어지러움, 구토, 미각 변화</p>
+                        <p class="text-xs text-gray-500">📝 단시간 작용형 ACE 억제제</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Losartan 50mg – Cozaar / Losartan Harsen</h2>
+                        <p class="text-gray-600 mb-2">고혈압, 당뇨병성 신장병</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 15,000–22,000 (10정)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 혈압 상승, 단백뇨</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 피로, 혈압 저하, 고칼륨혈증</p>
+                        <p class="text-xs text-gray-500">📝 ARB(안지오텐신 수용체 차단제), 혈관 수축 억제</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Atorvastatin 10mg – Lipitor / Torvast</h2>
+                        <p class="text-gray-600 mb-2">고지혈증, 심혈관질환 예방</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 30,000–45,000 (10정)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 고LDL콜레스테롤, 고중성지방</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 근육통, 간효소 상승</p>
+                        <p class="text-xs text-gray-500">📝 HMG-CoA 환원효소 억제 → 콜레스테롤 합성 억제</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Levothyroxine 50µg – Eltroxin / Thyrax</h2>
+                        <p class="text-gray-600 mb-2">갑상선 기능 저하증</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 25,000–35,000 (10정)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 피로, 추위 민감, 체중 증가</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 불면, 심계항진 (과용량 시)</p>
+                        <p class="text-xs text-gray-500">📝 인공 갑상선 호르몬으로 대사 정상화</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Insulin – Lantus / Novorapid</h2>
+                        <p class="text-gray-600 mb-2">제1형 및 제2형 당뇨 조절</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 200,000–350,000 (1 vial)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 고혈당, 케톤산증 위험</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 저혈당, 체중 증가, 주사 부위 통증</p>
+                        <p class="text-xs text-gray-500">📝 외부 인슐린 보충으로 혈당 안정화</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Salbutamol Inhaler – Ventolin / Asthalin</h2>
+                        <p class="text-gray-600 mb-2">천식, 기관지 경련</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 110,000–160,000 (200회 분사)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 호흡곤란, 쌕쌕거림, 운동유발성 천식</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 손 떨림, 심계항진, 불안</p>
+                        <p class="text-xs text-gray-500">📝 베타-2 수용체 자극 → 기관지 근육 이완</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Propranolol 40mg – Inderal / Generic</h2>
+                        <p class="text-gray-600 mb-2">부정맥, 고혈압, 불안장애, 편두통 예방</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 12,000–18,000 (10정)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 심장 두근거림, 시험/무대 불안, 떨림</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 저혈압, 어지러움, 우울감, 냉감</p>
+                        <p class="text-xs text-gray-500">📝 베타 차단제로 심박수 감소, 스트레스 반응 억제</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="기타" class="tab-content">
+            <div class="scroll-area">
+                <div class="grid gap-4">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Eye Drops – Insto</h2>
+                        <p class="text-gray-600 mb-2">눈 피로, 건조함</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 8,000–12,000 (7.5ml)</p>
+                        <p class="text-xs text-gray-500">📝 인공눈물, 하루 3-4회 점안</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Oral Rehydration – Pocari Sweat</h2>
+                        <p class="text-gray-600 mb-2">탈수 예방, 전해질 보충</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 5,000–8,000 (1포)</p>
+                        <p class="text-xs text-gray-500">📝 이온음료 분말, 500ml 물에 1포</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Antiseptic – Alcohol 70%</h2>
+                        <p class="text-gray-600 mb-2">손 소독, 표면 청소</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 8,000–12,000 (100ml)</p>
+                        <p class="text-xs text-gray-500">📝 에틸알코올, 화기 주의</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Thermometer – Digital</h2>
+                        <p class="text-gray-600 mb-2">체온 측정</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 25,000–40,000 (1개)</p>
+                        <p class="text-xs text-gray-500">📝 디지털 체온계, 배터리 교체 가능</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Band-Aid – Hansaplast</h2>
+                        <p class="text-gray-600 mb-2">상처 보호, 지혈</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 8,000–15,000 (20개입)</p>
+                        <p class="text-xs text-gray-500">📝 일회용 반창고, 다양한 크기</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Insect Repellent – Autan</h2>
+                        <p class="text-gray-600 mb-2">모기, 벌레 방충</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 15,000–20,000 (60ml)</p>
+                        <p class="text-xs text-gray-500">📝 DEET 함유, 4시간마다 재도포</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Glucose Tablets – Dextro Energy</h2>
+                        <p class="text-gray-600 mb-2">저혈당 응급처치</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 12,000–18,000 (14정)</p>
+                        <p class="text-xs text-gray-500">📝 포도당 정제, 당뇨 환자 응급용</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-2">Activated Charcoal – Norit</h2>
+                        <p class="text-gray-600 mb-2">식중독, 독소 흡착</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 Rp 15,000–20,000 (10정)</p>
+                        <p class="text-xs text-gray-500">📝 활성탄, 다른 약물과 2시간 간격</p>
+                    </div>
+                    <div class="bg-red-50 rounded-2xl shadow-md p-6 hover:shadow-lg transition-shadow duration-200 border-l-4 border-red-400">
+                        <h2 class="text-lg font-semibold text-red-800 mb-2">🚨 Epinephrine Auto‑Injector – EpiPen</h2>
+                        <p class="text-gray-600 mb-2">아나필락시스(전신 알레르기 반응) 응급처치</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 약 Rp 1,000,000–1,500,000 (약국에 따라 다름)</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: 입술/목 부종, 호흡 곤란, 두드러기, 쇼크</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: 불안, 빈맥, 두통, 떨림</p>
+                        <p class="text-xs text-orange-600 mb-2">🏥 대형 약국이나 병원에서만 구입 가능 (응급 전용)</p>
+                        <p class="text-xs text-gray-500">📝 아드레날린 분사로 혈압 상승 및 기도 확장</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Enhanced medicine database with natural expressions
+        const symptomExpressions = {
+            // 두통 관련 표현들
+            '두통': ['머리', '머리가', '머리 아파', '머리 깨질', '머리가 깨질', '머리 무거워', '머리가 무거워', '머리 멍해', '머리가 멍해', '머리 울려', '머리가 울려', '머리 터질', '머리가 터질', '머리 지끈', '머리가 지끈', '편두통', '두통'],
+            
+            // 복통 관련 표현들  
+            '복통': ['배', '배가', '배 아파', '배 꼬여', '배가 꼬여', '속', '속이', '속 쓰려', '속이 쓰려', '속 아파', '속이 아파', '위', '위가', '위 쓰려', '위가 쓰려', '복통', '배탈', '체했', '소화', '소화가', '소화 안', '소화가 안', '속 울렁', '속이 울렁', '메슥', '메스꺼워', '구역', '구역질', '토할', '토할 것', '헛구역', '헛구역질'],
+            
+            // 기침 관련 표현들
+            '기침': ['기침', '기침이', '기침 나', '기침이 나', '기침 멈추지', '기침이 멈추지', '기침 안', '기침이 안', '콜록', '켁켁', '가래', '가래가', '가래 끼', '가래가 끼', '목', '목이', '목 칼칼', '목이 칼칼', '목 아파', '목이 아파', '목 부어', '목이 부어'],
+            
+            // 콧물/코막힘 관련 표현들
+            '콧물': ['콧물', '콧물이', '콧물 나', '콧물이 나', '코', '코가', '코 막혀', '코가 막혀', '코막힘', '재채기', '재채기가', '재채기 나', '재채기가 나', '콧속', '콧속이', '비염', '알레르기'],
+            
+            // 발열 관련 표현들
+            '발열': ['열', '열이', '열 나', '열이 나', '열 올라', '열이 올라', '열꽃', '몸이 타', '몸이 타는', '뜨거워', '뜨거운', '오한', '춥고', '춥고 더워', '식은땀', '식은땀이', '펄펄', '펄펄 끓', '39도', '38도', '고열', '미열', '발열'],
+            
+            // 설사 관련 표현들
+            '설사': ['설사', '설사를', '설사가', '화장실', '화장실을', '화장실 자주', '배변', '배변이', '묽은', '물같은', '배 꼬이', '배가 꼬이', '장염', '식중독', '탈수'],
+            
+            // 가려움 관련 표현들
+            '가려움': ['가려워', '가렵다', '가려움', '긁고', '긁고 싶', '따가워', '따갑다', '따끔', '따끔거려', '따끔거리', '화끈', '화끈거려', '화끈거리', '두드러기', '발진', '알레르기', '피부', '피부가'],
+            
+            // 통증 관련 일반 표현들
+            '통증': ['아파', '아프다', '아픈', '아프', '욱신', '욱신거려', '욱신거리', '쑤셔', '쑤시다', '쑤신', '찌릿', '찌릿찌릿', '찌르는', '칼로 찌르', '바늘로', '전기', '전기 충격', '죽을 것', '죽겠', '진짜 아파', '너무 아파', '살 찢어', '뼈 시려', '뼈가 시려', '관절', '관절이', '근육', '근육이', '뭉쳐', '뭉친', '뻐근', '뻐근해', '무거워', '무겁다', '저려', '저리다', '멍멍', '숨 막혀', '숨이 막혀', '답답', '답답해', '조여', '조여와'],
+            
+            // 피로/무기력 관련 표현들
+            '피로': ['피곤', '피곤해', '기운', '기운이', '기운 없', '기운이 없', '맥', '맥이', '맥 빠져', '맥이 빠져', '진', '진이', '진 빠져', '진이 빠져', '무기력', '무기력해', '쓰러질', '쓰러질 것', '녹아내릴', '퍼질', '퍼질 것', '몸이 다', '몸 전체', '온몸', '온몸이'],
+            
+            // 심리적 증상들
+            '우울': ['우울', '우울해', '멘붕', '정신', '정신이', '정신 없', '정신이 없', '무뎌', '무뎌져', '눈물', '눈물이', '마음', '마음이', '가슴', '가슴이', '먹먹', '허탈', '멍하니', '심란', '속상', '허무'],
+            
+            // 소화기 증상들
+            '소화불량': ['소화', '소화가', '소화 안', '소화가 안', '더부룩', '더부룩해', '체했', '체한', '입맛', '입맛이', '입맛 없', '입맛이 없', '속 비어', '속이 비어', '속 뒤집', '속이 뒤집'],
+            
+            // 변비 관련
+            '변비': ['변비', '변비가', '변 안', '변이 안', '배변', '배변이', '배변 안', '배변이 안', '화장실', '화장실 못'],
+            
+            // 현기증/어지러움
+            '현기증': ['어지러워', '어지럽다', '현기증', '빙빙', '빙글빙글', '눈앞', '눈앞이', '캄캄', '침침', '멍해', '혼미', '정신 혼미'],
+            
+            // 심장 관련
+            '심계항진': ['심장', '심장이', '두근', '두근거려', '두근거리', '가슴', '가슴이', '두근두근', '심장 뛰', '심장이 뛰', '가슴 뛰', '가슴이 뛰'],
+            
+            // 이명/귀 관련
+            '이명': ['귀', '귀에서', '귀가', '삐', '삐 소리', '윙', '윙 소리', '이명', '먹먹', '귀 먹먹', '귀가 먹먹'],
+            
+            // 치통
+            '치통': ['이', '이가', '치아', '치아가', '이 아파', '이가 아파', '이 시려', '이가 시려', '이 욱신', '이가 욱신', '치통', '잇몸', '잇몸이'],
+            
+            // 목 관련
+            '목통증': ['목', '목이', '목 아파', '목이 아파', '목 뻣뻣', '목이 뻣뻣', '목 돌리', '목 못', '목 안'],
+            
+            // 손발 저림
+            '저림': ['손', '손이', '손끝', '손끝이', '발', '발이', '발끝', '발끝이', '저려', '저리다', '저린', '손발', '손발이', '차가워', '차다', '시려', '시리다']
+        };
+
+        const medicineDatabase = {
+            '기침': [
+                {
+                    name: 'Dextromethorphan 10mg – Woods, OBH Batuk',
+                    description: '마른기침 억제',
+                    price: 'Rp 4,000–7,000 (10정)',
+                    effective: '마른기침, 알레르기성 기침',
+                    sideEffects: '어지러움, 졸음, 구역감',
+                    note: '마른 기침을 억제하는 진해제'
+                },
+                {
+                    name: 'Guaifenesin 100mg – Woods, OBH Combi',
+                    description: '가래 배출',
+                    price: 'Rp 4,500–7,000 (10정)',
+                    effective: '가래 기침, 기관지염',
+                    sideEffects: '메스꺼움, 위장장애',
+                    note: '점액을 묽게 하여 기침을 쉽게 함'
+                },
+                {
+                    name: 'Ambroxol 30mg – Mucosolvan Tablet',
+                    description: '가래 제거, 점액 용해',
+                    price: 'Rp 7,000–10,000 (10정)',
+                    effective: '기관지염, 감기 가래',
+                    sideEffects: '위장 자극, 미각 변화',
+                    note: '기관지 점액 제거 촉진'
+                }
+            ],
+            '콧물': [
+                {
+                    name: 'Loratadine 10mg – Clarityne / Alerid',
+                    description: '비알레르기성 알레르기',
+                    price: 'Rp 5,000–8,000 (10정)',
+                    effective: '코막힘, 재채기, 콧물, 두드러기',
+                    sideEffects: '드물게 졸음, 입 마름',
+                    note: '졸음이 덜한 2세대 항히스타민제'
+                },
+                {
+                    name: 'Cetirizine 10mg – Incidal OD / Zyrtec',
+                    description: '계절성 알레르기',
+                    price: 'Rp 4,500–7,000 (10정)',
+                    effective: '재채기, 가려움, 눈물',
+                    sideEffects: '졸음, 두통',
+                    note: '알레르기 비염, 피부염에 효과적'
+                },
+                {
+                    name: 'Pseudoephedrine 60mg – Actifed / Mixagrip',
+                    description: '코막힘 완화',
+                    price: 'Rp 6,000–10,000 (10정)',
+                    effective: '감기, 비염, 축농증',
+                    sideEffects: '불면, 혈압 상승, 심계항진',
+                    note: '비충혈 제거제. 고혈압 환자 주의'
+                }
+            ],
+            '통증': [
+                {
+                    name: 'Paracetamol 500mg – Sanmol',
+                    description: '두통, 치통, 발열 해소',
+                    price: 'Rp 2,200–2,600 (4정)',
+                    effective: '두통, 치통, 미열, 감기',
+                    sideEffects: '간기능 이상 (고용량 시), 메스꺼움',
+                    note: '가장 널리 사용되는 해열진통제'
+                },
+                {
+                    name: 'Ibuprofen 200mg – Proris Tablet',
+                    description: '통증, 생리통, 발열',
+                    price: 'Rp 8,400–10,200 (10정)',
+                    effective: '생리통, 염증, 근육통',
+                    sideEffects: '속쓰림, 위장 출혈, 신장 기능 저하',
+                    note: '비스테로이드성 항염증제(NSAID)'
+                },
+                {
+                    name: 'Mefenamic Acid 250mg – Ponstan',
+                    description: '생리통, 근육통 등',
+                    price: 'Rp 8,000–12,000 (10정)',
+                    effective: '생리통, 치통, 요통',
+                    sideEffects: '위장장애, 메스꺼움, 어지러움',
+                    note: '강한 진통 효과가 있는 NSAID'
+                }
+            ],
+            '피로': [
+                {
+                    name: 'Vitamin B Complex – Neurobion',
+                    description: '신경계 건강, 피로 회복',
+                    price: 'Rp 20,000–25,000 (10정)',
+                    effective: '피로, 무기력, 신경통',
+                    sideEffects: '드물게 알레르기 반응',
+                    note: 'B1, B6, B12 복합체, 식후 복용'
+                },
+                {
+                    name: 'Vitamin C 500mg – Redoxon',
+                    description: '면역력 강화, 감기 예방',
+                    price: 'Rp 15,000–20,000 (10정)',
+                    effective: '피로, 면역력 저하, 감기 예방',
+                    sideEffects: '과량 복용 시 설사',
+                    note: '수용성 비타민, 하루 1-2정'
+                },
+                {
+                    name: 'Tolak Angin',
+                    description: '감기 초기 증상 완화, 몸살, 피로 회복',
+                    price: 'Rp 5,000–10,000 (팩)',
+                    effective: '감기 초기 증상, 몸살, 체력 저하',
+                    sideEffects: '과민 반응 시 알레르기',
+                    note: '인도네시아 전통 허브 성분 기반'
+                }
+            ],
+            '우울': [
+                {
+                    name: 'Vitamin B Complex – Neurobion',
+                    description: '신경계 건강, 기분 개선',
+                    price: 'Rp 20,000–25,000 (10정)',
+                    effective: '우울감, 무기력, 신경 안정',
+                    sideEffects: '드물게 알레르기 반응',
+                    note: '신경계 영양 공급으로 기분 개선 도움'
+                },
+                {
+                    name: 'Magnesium Supplement',
+                    description: '스트레스 완화, 신경 안정',
+                    price: 'Rp 25,000–35,000 (30정)',
+                    effective: '불안, 스트레스, 근육 긴장',
+                    sideEffects: '과량 복용 시 설사',
+                    note: '마그네슘 부족 시 우울감 증가 가능'
+                }
+            ],
+            '소화불량': [
+                {
+                    name: 'Domperidone 10mg – Motilium',
+                    description: '소화불량, 구토 억제',
+                    price: 'Rp 6,000–9,000 (10정)',
+                    effective: '더부룩함, 오심',
+                    sideEffects: '입마름, 드물게 심장 부정맥',
+                    note: '위 배출을 촉진하여 더부룩함 완화'
+                },
+                {
+                    name: 'Simethicone 40mg – Polysilane',
+                    description: '복부 팽만, 가스 제거',
+                    price: 'Rp 6,000–9,000 (10정)',
+                    effective: '복부팽만, 가스',
+                    sideEffects: '거의 없음',
+                    note: '가스를 분해해 트림, 복통 완화'
+                }
+            ],
+            '변비': [
+                {
+                    name: 'Lactulose Syrup – Duphalac',
+                    description: '변비 완화',
+                    price: 'Rp 15,000–20,000 (200ml)',
+                    effective: '만성변비, 치질 환자의 배변 완화',
+                    sideEffects: '복부 팽만, 방귀',
+                    note: '장내 수분을 증가시켜 배변 유도'
+                },
+                {
+                    name: 'Bisacodyl 5mg – Dulcolax',
+                    description: '자극성 완화제',
+                    price: 'Rp 7,000–10,000 (10정)',
+                    effective: '변비',
+                    sideEffects: '복통, 설사, 전해질 불균형',
+                    note: '대장 운동 촉진. 단기 사용 권장'
+                }
+            ],
+            '현기증': [
+                {
+                    name: 'Betahistine 6mg – Merislon',
+                    description: '현기증, 어지러움',
+                    price: 'Rp 15,000–20,000 (10정)',
+                    effective: '현기증, 메니에르병, 이명',
+                    sideEffects: '메스꺼움, 두통',
+                    note: '내이 혈류 개선으로 현기증 완화'
+                },
+                {
+                    name: 'Dimenhydrinate 50mg – Dramamine',
+                    description: '멀미, 현기증',
+                    price: 'Rp 8,000–12,000 (10정)',
+                    effective: '멀미, 현기증, 구토',
+                    sideEffects: '졸음, 입마름',
+                    note: '여행 전 30분 복용 권장'
+                }
+            ],
+            '심계항진': [
+                {
+                    name: 'Propranolol 40mg – Inderal',
+                    description: '부정맥, 고혈압, 불안장애',
+                    price: 'Rp 12,000–18,000 (10정)',
+                    effective: '심장 두근거림, 시험 불안, 떨림',
+                    sideEffects: '저혈압, 어지러움, 우울감',
+                    note: '베타 차단제로 심박수 감소'
+                }
+            ],
+            '이명': [
+                {
+                    name: 'Betahistine 6mg – Merislon',
+                    description: '현기증, 이명',
+                    price: 'Rp 15,000–20,000 (10정)',
+                    effective: '이명, 현기증, 메니에르병',
+                    sideEffects: '메스꺼움, 두통',
+                    note: '내이 혈류 개선으로 이명 완화'
+                }
+            ],
+            '치통': [
+                {
+                    name: 'Paracetamol 500mg – Sanmol',
+                    description: '두통, 치통, 발열 해소',
+                    price: 'Rp 2,200–2,600 (4정)',
+                    effective: '치통, 잇몸 통증',
+                    sideEffects: '간기능 이상 (고용량 시)',
+                    note: '치통에 가장 안전한 진통제'
+                },
+                {
+                    name: 'Ibuprofen 200mg – Proris',
+                    description: '염증성 통증',
+                    price: 'Rp 8,400–10,200 (10정)',
+                    effective: '치통, 잇몸 염증',
+                    sideEffects: '속쓰림, 위장 출혈',
+                    note: '염증성 치통에 효과적'
+                }
+            ],
+            '목통증': [
+                {
+                    name: 'Ibuprofen 200mg – Proris',
+                    description: '염증성 통증',
+                    price: 'Rp 8,400–10,200 (10정)',
+                    effective: '목 통증, 근육 염증',
+                    sideEffects: '속쓰림, 위장 출혈',
+                    note: '목 근육 염증에 효과적'
+                },
+                {
+                    name: 'Paracetamol 500mg – Sanmol',
+                    description: '일반적인 통증 완화',
+                    price: 'Rp 2,200–2,600 (4정)',
+                    effective: '목 통증, 근육통',
+                    sideEffects: '간기능 이상 (고용량 시)',
+                    note: '목 통증 완화에 안전한 선택'
+                }
+            ],
+            '저림': [
+                {
+                    name: 'Vitamin B Complex – Neurobion',
+                    description: '신경계 건강, 말초신경염',
+                    price: 'Rp 20,000–25,000 (10정)',
+                    effective: '손발 저림, 신경통',
+                    sideEffects: '드물게 알레르기 반응',
+                    note: '말초신경 기능 개선'
+                },
+                {
+                    name: 'Methylcobalamin 500mcg',
+                    description: '비타민 B12, 신경 재생',
+                    price: 'Rp 30,000–40,000 (10정)',
+                    effective: '손발 저림, 신경 손상',
+                    sideEffects: '거의 없음',
+                    note: '신경 재생과 기능 회복에 도움'
+                }
+            ],
+            '두통': [
+                {
+                    name: 'Paracetamol 500mg – Sanmol',
+                    description: '두통, 치통, 발열 해소',
+                    price: 'Rp 2,200–2,600 (4정)',
+                    effective: '두통, 치통, 미열, 감기',
+                    sideEffects: '간기능 이상 (고용량 시), 메스꺼움',
+                    note: '가장 널리 사용되는 해열진통제'
+                },
+                {
+                    name: 'Ibuprofen 200mg – Proris Tablet',
+                    description: '통증, 생리통, 발열',
+                    price: 'Rp 8,400–10,200 (10정)',
+                    effective: '생리통, 염증, 근육통',
+                    sideEffects: '속쓰림, 위장 출혈, 신장 기능 저하',
+                    note: '비스테로이드성 항염증제(NSAID)'
+                },
+                {
+                    name: 'Panadol (Paracetamol 500mg)',
+                    description: '두통, 발열, 치통 등 일반 통증 완화',
+                    price: 'Rp 5,000–7,000 (10정)',
+                    effective: '두통, 발열, 치통, 근육통',
+                    sideEffects: '드물게 간 손상 (과다 복용 시)',
+                    note: '전 세계적으로 널리 사용되는 해열진통제'
+                }
+            ],
+            '복통': [
+                {
+                    name: 'Omeprazole 20mg – Omepro / Omez',
+                    description: '위산 과다, 위염, 위궤양',
+                    price: 'Rp 10,000–13,000 (10정)',
+                    effective: '속쓰림, 위궤양, 식도역류',
+                    sideEffects: '설사, 복통, 장기 복용 시 B12 결핍',
+                    note: '위산분비 억제제 (PPI). 아침 공복 복용'
+                },
+                {
+                    name: 'Antacids – Promag / Mylanta / Polysilane',
+                    description: '위산 중화',
+                    price: 'Rp 5,000–10,000 (정제/시럽)',
+                    effective: '속쓰림, 위산 역류, 소화불량',
+                    sideEffects: '변비 또는 설사, 복부 팽만',
+                    note: '즉효성. 위산을 직접 중화시켜 속쓰림 해소'
+                },
+                {
+                    name: 'Activated Charcoal 250mg – Norit',
+                    description: '가벼운 식중독, 가스 제거',
+                    price: 'Rp 8,000–12,000 (10정)',
+                    effective: '식중독, 설사, 복통',
+                    sideEffects: '변색된 대변, 변비',
+                    note: '독소 흡착작용. 급성 복통 시 사용'
+                }
+            ],
+            '발열': [
+                {
+                    name: 'Paracetamol 500mg – Sanmol',
+                    description: '두통, 치통, 발열 해소',
+                    price: 'Rp 2,200–2,600 (4정)',
+                    effective: '두통, 치통, 미열, 감기',
+                    sideEffects: '간기능 이상 (고용량 시), 메스꺼움',
+                    note: '가장 널리 사용되는 해열진통제'
+                },
+                {
+                    name: 'Paracetamol 650mg – Sanmol Forte',
+                    description: '성인용 고용량 해열진통',
+                    price: 'Rp 3,200 (4정)',
+                    effective: '고열, 생리통, 감기 발열',
+                    sideEffects: '간 독성, 구토',
+                    note: '고열 또는 강한 통증에 사용'
+                },
+                {
+                    name: 'Ibuprofen Syrup – Proris Suspensi',
+                    description: '어린이용 해열·진통 (50-60ml)',
+                    price: 'Rp 26,000–39,000',
+                    effective: '감기 발열, 중이염 등 소아통증',
+                    sideEffects: '복통, 구토, 설사',
+                    note: '어린이 발열, 감기 통증에 효과적'
+                }
+            ],
+            '설사': [
+                {
+                    name: 'Loperamide 2mg – Imodium / Diapet',
+                    description: '설사 완화',
+                    price: 'Rp 4,000–7,000 (10정)',
+                    effective: '급성 설사, 여행자 설사',
+                    sideEffects: '복통, 변비, 졸음',
+                    note: '장운동 억제로 급성 설사 증상 조절'
+                },
+                {
+                    name: 'ORS Drinks – Pocari Sweat',
+                    description: '전해질 보충 (500ml)',
+                    price: 'Rp 5,000–7,000',
+                    effective: '탈수, 구토, 설사',
+                    sideEffects: '당 함량 주의 (당뇨 환자)',
+                    note: '흡수가 빠른 전해질 음료'
+                },
+                {
+                    name: 'Activated Charcoal 250mg – Norit',
+                    description: '가벼운 식중독, 가스 제거',
+                    price: 'Rp 8,000–12,000 (10정)',
+                    effective: '식중독, 설사, 복통',
+                    sideEffects: '변색된 대변, 변비',
+                    note: '독소 흡착작용. 급성 복통 시 사용'
+                }
+            ],
+            '가려움': [
+                {
+                    name: 'Loratadine 10mg – Clarityne / Alerid',
+                    description: '비알레르기성 알레르기',
+                    price: 'Rp 5,000–8,000 (10정)',
+                    effective: '코막힘, 재채기, 콧물, 두드러기',
+                    sideEffects: '드물게 졸음, 입 마름',
+                    note: '졸음이 덜한 2세대 항히스타민제'
+                },
+                {
+                    name: 'Cetirizine 10mg – Incidal OD / Zyrtec',
+                    description: '계절성 알레르기',
+                    price: 'Rp 4,500–7,000 (10정)',
+                    effective: '재채기, 가려움, 눈물',
+                    sideEffects: '졸음, 두통',
+                    note: '알레르기 비염, 피부염에 효과적'
+                },
+                {
+                    name: 'Calamine Lotion – Caladine / Calamine Baby',
+                    description: '가려움, 두드러기, 열 rash 완화',
+                    price: 'Rp 8,000–12,000 (60ml)',
+                    effective: '벌레 물림, 땀띠, 알레르기성 발진',
+                    sideEffects: '드물게 건조감',
+                    note: '시원하고 진정되는 느낌. 아이들 피부에도 안전'
+                }
+            ]
+        };
+
+        function searchSymptoms() {
+            const searchTerm = document.getElementById('symptomSearch').value.toLowerCase().trim();
+            
+            if (searchTerm.length < 1) {
+                document.getElementById('searchResults').classList.add('hidden');
+                return;
+            }
+
+            let results = [];
+            let matchedSymptoms = [];
+            
+            // Enhanced search through natural expressions
+            for (const [symptom, expressions] of Object.entries(symptomExpressions)) {
+                for (const expression of expressions) {
+                    if (searchTerm.includes(expression) || expression.includes(searchTerm)) {
+                        if (!matchedSymptoms.includes(symptom)) {
+                            matchedSymptoms.push(symptom);
+                            if (medicineDatabase[symptom]) {
+                                results = results.concat(medicineDatabase[symptom]);
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+
+            // Direct symptom search
+            for (const [symptom, medicines] of Object.entries(medicineDatabase)) {
+                if ((symptom.includes(searchTerm) || searchTerm.includes(symptom)) && !matchedSymptoms.includes(symptom)) {
+                    results = results.concat(medicines);
+                    matchedSymptoms.push(symptom);
+                }
+            }
+
+            // Search in medicine names and descriptions
+            for (const medicines of Object.values(medicineDatabase)) {
+                for (const medicine of medicines) {
+                    if (medicine.name.toLowerCase().includes(searchTerm) || 
+                        medicine.description.toLowerCase().includes(searchTerm) ||
+                        medicine.effective.toLowerCase().includes(searchTerm)) {
+                        if (!results.some(r => r.name === medicine.name)) {
+                            results.push(medicine);
+                        }
+                    }
+                }
+            }
+
+            // Remove duplicates
+            const uniqueResults = results.filter((medicine, index, self) => 
+                index === self.findIndex(m => m.name === medicine.name)
+            );
+
+            displayResults(uniqueResults, searchTerm, matchedSymptoms);
+        }
+
+        function quickSearch(symptom) {
+            document.getElementById('symptomSearch').value = symptom;
+            const medicines = medicineDatabase[symptom] || [];
+            displayResults(medicines, symptom);
+        }
+
+        function quickSearchNatural(expression) {
+            document.getElementById('symptomSearch').value = expression;
+            searchSymptoms();
+        }
+
+        function displayResults(medicines, searchTerm, matchedSymptoms = []) {
+            const resultsContainer = document.getElementById('searchResults');
+            const medsContainer = document.getElementById('recommendedMeds');
+            
+            if (medicines.length === 0) {
+                medsContainer.innerHTML = `
+                    <div class="text-center py-8">
+                        <div class="text-6xl mb-4">😔</div>
+                        <p class="text-gray-600 text-lg mb-2">"${searchTerm}"에 대한 추천 약물을 찾을 수 없습니다.</p>
+                        <p class="text-sm text-gray-500 mb-4">다른 표현으로 검색해보시거나 빠른 검색 버튼을 이용해보세요.</p>
+                        <div class="bg-blue-50 rounded-lg p-4 text-left">
+                            <p class="text-sm text-blue-800 font-medium mb-2">💡 이런 표현들을 시도해보세요:</p>
+                            <div class="text-xs text-blue-600 space-y-1">
+                                <p>• "머리 아파", "머리 깨질 것 같아" → 두통 약물</p>
+                                <p>• "속 쓰려", "배 아파", "체했어" → 소화기 약물</p>
+                                <p>• "기침 멈추지 않아", "가래 끼어" → 기침 약물</p>
+                                <p>• "코 막혀", "콧물 나" → 감기/알레르기 약물</p>
+                                <p>• "열 나", "몸이 타는 것 같아" → 해열제</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                let headerText = `💡 "${searchTerm}"에 대한 추천 약물`;
+                if (matchedSymptoms.length > 0) {
+                    headerText += ` (${matchedSymptoms.join(', ')} 관련)`;
+                }
+                
+                medsContainer.innerHTML = `
+                    <div class="mb-4 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border-l-4 border-green-400">
+                        <p class="text-green-800 font-medium">${headerText}</p>
+                        <p class="text-sm text-green-600 mt-1">총 ${medicines.length}개의 약물을 찾았습니다.</p>
+                    </div>
+                ` + medicines.map(med => `
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">${med.name}</h3>
+                        <p class="text-gray-600 mb-2">${med.description}</p>
+                        <p class="text-blue-600 font-medium mb-2">💰 ${med.price}</p>
+                        <p class="text-sm text-green-700 mb-2">✅ 효과적: ${med.effective}</p>
+                        <p class="text-sm text-red-600 mb-2">⚠️ 부작용: ${med.sideEffects}</p>
+                        <p class="text-xs text-gray-500">📝 ${med.note}</p>
+                    </div>
+                `).join('');
+            }
+            
+            resultsContainer.classList.remove('hidden');
+            resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function clearSearch() {
+            document.getElementById('symptomSearch').value = '';
+            document.getElementById('searchResults').classList.add('hidden');
+        }
+
+        function showTab(category) {
+            // Hide search results when switching tabs
+            document.getElementById('searchResults').classList.add('hidden');
+            
+            // Hide all tab contents
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+            });
+
+            // Remove active class from all buttons
+            const tabButtons = document.querySelectorAll('.tab-button');
+            tabButtons.forEach(button => {
+                button.classList.remove('active');
+            });
+
+            // Show selected tab content
+            document.getElementById(category).classList.add('active');
+
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
+
+        // Initialize first tab as active
+        document.addEventListener('DOMContentLoaded', function() {
+            const firstButton = document.querySelector('.tab-button');
+            const firstTab = document.querySelector('.tab-content');
+            firstButton.classList.add('active');
+            firstTab.classList.add('active');
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'95f88f8b82b7ea8f',t:'MTc1MjU3NTE3OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
+
